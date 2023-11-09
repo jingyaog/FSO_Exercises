@@ -3,7 +3,7 @@ import { useState } from 'react'
 const App = () => {
   const [persons, setPersons] = useState([
     { name: 'Arto Hellas' }
-  ]) 
+  ])
   const [newName, setNewName] = useState('')
 
   const changeName = (event) => {
@@ -12,6 +12,12 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
+    const duplicates = persons.filter(person =>
+      JSON.stringify(person.name) === JSON.stringify(newName))
+    if (duplicates.length !== 0) {
+      window.alert(`${newName} is already added to phonebook`)
+      return
+    }
     setPersons([...persons, { name: newName }])
     setNewName('')
   }
