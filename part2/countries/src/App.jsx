@@ -3,7 +3,7 @@ import Filter from './components/Filter'
 import Countries from './components/Countries'
 import axios from 'axios'
 
-function App() {
+const App = () => {
   const [newSearch, setNewSearch] = useState('')
   const [countries, setCountries] = useState([])
 
