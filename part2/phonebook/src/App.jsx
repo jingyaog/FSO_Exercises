@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import Notification from './components/Notification'
 import personService from './services/persons'
 
 const App = () => {
@@ -9,6 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
+  const [message, setMessage] = useState(null)
   const regex = new RegExp(newSearch, 'i')
   const personsToShow = persons.filter(person => person.name.match(regex))
 
@@ -47,6 +49,10 @@ const App = () => {
           .then(returnedPerson => {
             console.log(returnedPerson)
             setPersons(persons.map(person => person.id === id ? returnedPerson : person))
+            setMessage(`Updated ${personToUpdate.name}`)
+            setTimeout(() => {
+              setMessage(null)
+            }, 5000)
           })
           .catch(() => {
             alert(
@@ -67,6 +73,10 @@ const App = () => {
         .create(person)
         .then(response => {
           setPersons(persons.concat(response))
+          setMessage(`Added ${newName}`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 5000)
         })
     }
     setNewName('')
@@ -79,8 +89,11 @@ const App = () => {
       personService
         .remove(id)
         .then(() => {
-          console.log(`${personToDelete.name} deleted`)
           setPersons(persons.filter(person => person.id !== id))
+          setMessage(`${personToDelete.name} deleted`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 5000)
         })
     }
   }
@@ -88,6 +101,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <Filter text='filter shown with' newSearch={newSearch} handleSearchChange={changeSearch} />
 
       <h2>Add a new</h2>
