@@ -34,30 +34,47 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    const duplicates = persons.filter(person =>
+    const replaceMsg = `${newName} is already added to phonebook, replace the old number with a new one?`
+    const existing = persons.filter(person =>
       JSON.stringify(person.name) === JSON.stringify(newName))
-    if (duplicates.length !== 0) {
-      window.alert(`${newName} is already added to phonebook`)
-      return
+    if (existing.length !== 0) {
+      if (window.confirm(replaceMsg)) {
+        const personToUpdate = existing[0]
+        const id = personToUpdate.id
+        const updatedPerson = { ...personToUpdate, number: newNumber }
+        personService
+          .update(id, updatedPerson)
+          .then(returnedPerson => {
+            console.log(returnedPerson)
+            setPersons(persons.map(person => person.id === id ? returnedPerson : person))
+          })
+          .catch(() => {
+            alert(
+              `the person '${personToUpdate.name}' was already deleted from server`
+            )
+            setPersons(persons.filter(p => p.id !== id))
+          })
+      }
     }
-    const person = {
-      name: newName,
-      number: newNumber,
-      id: persons.length + 1
+    else {
+      const person = {
+        name: newName,
+        number: newNumber,
+        id: persons.length + 1
+      }
+  
+      personService
+        .create(person)
+        .then(response => {
+          setPersons(persons.concat(response))
+        })
     }
-
-    personService
-      .create(person)
-      .then(response => {
-        setPersons(persons.concat(response))
-        setNewName('')
-        setNewNumber('')
-      })
+    setNewName('')
+    setNewNumber('')
   }
 
   const deletePerson = (id) => {
     const personToDelete = persons.filter(person => person.id === id)[0]
-    console.log(personToDelete)
     if (window.confirm(`Delete ${personToDelete.name}?`)) {
       personService
         .remove(id)
