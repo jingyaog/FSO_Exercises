@@ -11,6 +11,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
   const [message, setMessage] = useState(null)
+  const [style, setStyle] = useState('success')
   const regex = new RegExp(newSearch, 'i')
   const personsToShow = persons.filter(person => person.name.match(regex))
 
@@ -49,15 +50,15 @@ const App = () => {
           .then(returnedPerson => {
             console.log(returnedPerson)
             setPersons(persons.map(person => person.id === id ? returnedPerson : person))
+            setStyle('success')
             setMessage(`Updated ${personToUpdate.name}`)
             setTimeout(() => {
               setMessage(null)
             }, 5000)
           })
           .catch(() => {
-            alert(
-              `the person '${personToUpdate.name}' was already deleted from server`
-            )
+            setStyle('error')
+            setMessage(`the person '${personToUpdate.name}' was already deleted from server`)
             setPersons(persons.filter(p => p.id !== id))
           })
       }
@@ -73,6 +74,7 @@ const App = () => {
         .create(person)
         .then(response => {
           setPersons(persons.concat(response))
+          setStyle('success')
           setMessage(`Added ${newName}`)
           setTimeout(() => {
             setMessage(null)
@@ -90,10 +92,16 @@ const App = () => {
         .remove(id)
         .then(() => {
           setPersons(persons.filter(person => person.id !== id))
+          setStyle('success')
           setMessage(`${personToDelete.name} deleted`)
           setTimeout(() => {
             setMessage(null)
           }, 5000)
+        })
+        .catch(() => {
+          setStyle('error')
+          setMessage(`the person '${personToDelete.name}' was already deleted from server`)
+          setPersons(persons.filter(p => p.id !== id))
         })
     }
   }
@@ -101,7 +109,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={message} />
+      <Notification message={message} style={style} />
       <Filter text='filter shown with' newSearch={newSearch} handleSearchChange={changeSearch} />
 
       <h2>Add a new</h2>
