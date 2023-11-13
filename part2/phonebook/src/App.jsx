@@ -16,7 +16,7 @@ const App = () => {
     personService
       .getAll()
       .then(response => {
-        setPersons(response.data)
+        setPersons(response)
       })
   }, [])
 
@@ -49,10 +49,23 @@ const App = () => {
     personService
       .create(person)
       .then(response => {
-        setPersons(persons.concat(response.data))
+        setPersons(persons.concat(response))
         setNewName('')
         setNewNumber('')
       })
+  }
+
+  const deletePerson = (id) => {
+    const personToDelete = persons.filter(person => person.id === id)[0]
+    console.log(personToDelete)
+    if (window.confirm(`Delete ${personToDelete.name}?`)) {
+      personService
+        .remove(id)
+        .then(() => {
+          console.log(`${personToDelete.name} deleted`)
+          setPersons(persons.filter(person => person.id !== id))
+        })
+    }
   }
 
   return (
@@ -70,7 +83,7 @@ const App = () => {
       />
 
       <h2>Numbers</h2>
-      <Persons personsToShow={personsToShow} />
+      <Persons personsToShow={personsToShow} handleClick={deletePerson} />
     </div>
   )
 }
