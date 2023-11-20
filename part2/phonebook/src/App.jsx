@@ -66,8 +66,8 @@ const App = () => {
     else {
       const person = {
         name: newName,
-        number: newNumber,
-        id: persons.length + 1
+        number: newNumber
+        // id: persons.length + 1
       }
   
       personService
