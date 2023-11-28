@@ -15,18 +15,27 @@ morgan.token('body', req => {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-app.get('/api/persons', (req, res) => {
-  Person.find({})
-    .then(persons => {
-      res.json(persons)
-    })
-    .catch(error => {
-      console.log(error)
-      res.status(404).end()
-    })
+app.get('/info', (req, res) => {
+  const date = new Date()
+  Person.find({}).then(persons => {
+    res.send(`
+      <div>
+        Phonebook has info for ${persons.length} people
+        <br/>
+        <br/>
+        ${date}
+      </div>
+    `)
+  })
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons', (req, res) => {
+  Person.find({}).then(persons => {
+    res.json(persons)
+  })
+})
+
+app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
       if (person) {
@@ -35,28 +44,15 @@ app.get('/api/persons/:id', (req, res) => {
         res.status(404).end()
       }
     })
-    .catch(error => {
-      console.log(error)
-      res.status(400).send({ error: 'malformatted id' })
-    })
+    .catch(error => next(error))
 })
 
-// app.get('/info', (req, res) => {
-//   const date = new Date()
-//   res.send(`
-//     <div>
-//       Phonebook has info for ${persons.length} people
-//       <br/>
-//       <br/>
-//       ${date}
-//     </div>
-//   `)
-// })
-
-app.delete('/api/persons/:id', (req, res) => {
-  Person.findByIdAndDelete(req.params.id).then(() =>
-    res.status(204).end()
-  )
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndDelete(req.params.id)
+    .then(() =>
+      res.status(204).end()
+    )
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res) => {
@@ -89,6 +85,18 @@ app.post('/api/persons', (req, res) => {
     res.json(savedPerson)
   })
 })
+
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
