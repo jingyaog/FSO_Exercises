@@ -56,10 +56,11 @@ const App = () => {
               setMessage(null)
             }, 5000)
           })
-          .catch(() => {
+          .catch(error => {
+            console.log(error.response.data.error)
             setStyle('error')
-            setMessage(`the person '${personToUpdate.name}' was already deleted from server`)
-            setPersons(persons.filter(p => p.id !== id))
+            setMessage(error.response.data.error)
+            // setPersons(persons.filter(p => p.id !== id))
           })
       }
     }
@@ -67,7 +68,6 @@ const App = () => {
       const person = {
         name: newName,
         number: newNumber
-        // id: persons.length + 1
       }
   
       personService
@@ -76,6 +76,14 @@ const App = () => {
           setPersons(persons.concat(response))
           setStyle('success')
           setMessage(`Added ${newName}`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 5000)
+        })
+        .catch(error => {
+          console.log(error.response.data.error)
+          setStyle('error')
+          setMessage(error.response.data.error)
           setTimeout(() => {
             setMessage(null)
           }, 5000)

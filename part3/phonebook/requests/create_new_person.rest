@@ -1,4 +1,5 @@
-POST http://localhost:3001/api/persons
+# POST http://localhost:3001/api/persons
+POST https://phoneboookapp.fly.dev/api/persons
 Content-Type: application/json
 
 {
