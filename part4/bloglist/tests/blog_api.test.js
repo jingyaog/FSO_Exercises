@@ -4,7 +4,7 @@ const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
 const helper = require('../tests/test_helper')
-
+const logger = require('../utils/logger')
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -119,6 +119,29 @@ describe('deleting blogs', () => {
     const titles = blogsAtEnd.map(b => b.title)
   
     expect(titles).not.toContain(blogToDelete.title)
+  })
+})
+
+describe('updating blogs', () => {
+  test('number of likes can be updated correctly', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedBlog = {
+      ...blogToUpdate,
+      likes: blogToUpdate.likes + 1
+    }
+  
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
+  
+    const newBlog = await Blog.findById(blogToUpdate.id)
+    expect(newBlog.toJSON().likes).toBe(blogToUpdate.likes + 1)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
   })
 })
 
