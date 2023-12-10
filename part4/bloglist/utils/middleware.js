@@ -3,7 +3,8 @@ const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 
 const userExtractor = async (req, res, next) => {
-  const authorization = req.get('authorization')
+  const authorization = req.get('Authorization')
+  // console.log(authorization)
   if (authorization && authorization.startsWith('bearer ')) {
     const token = authorization.replace('bearer ', '')
     const decodedToken = jwt.verify(token, process.env.SECRET)

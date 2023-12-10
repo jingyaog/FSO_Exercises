@@ -1,16 +1,19 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const bcrypt = require('bcrypt')
 const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const helper = require('../tests/test_helper')
 
-beforeEach(async () => {
-  await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
-})
-
 describe('getting blogs', () => {
+
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
   test('blogs are returned as json', async () => {
     await api
       .get('/api/blogs')
@@ -30,6 +33,30 @@ describe('getting blogs', () => {
 })
 
 describe('creating blogs', () => {
+
+  let authorization
+
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+
+    await User.deleteMany({})
+    const user = {
+      username: 'root',
+      password: 'password'
+    }
+
+    await api
+      .post('/api/users')
+      .send(user)
+
+    const response = await api
+      .post('/api/login')
+      .send(user)
+
+    authorization = `bearer ${response.body.token}`
+  })
+
   test('a new blog can be added', async () => {
     const newBlog = {
       title: "New Blog 0",
@@ -40,8 +67,9 @@ describe('creating blogs', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', authorization)
       .send(newBlog)
-      .expect(201)
+      .expect(200)
       .expect('Content-Type', /application\/json/)
 
     
@@ -61,8 +89,9 @@ describe('creating blogs', () => {
 
     const response = await api
       .post('/api/blogs')
+      .set('Authorization', authorization)
       .send(newBlog)
-      .expect(201)
+      .expect(200)
 
     expect(response.body.likes).toBe(0)
   })
@@ -76,6 +105,7 @@ describe('creating blogs', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', authorization)
       .send(newBlog)
       .expect(400)
 
@@ -92,27 +122,87 @@ describe('creating blogs', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', authorization)
       .send(newBlog)
       .expect(400)
 
     const blogsAtEnd = await helper.blogsInDb()
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
   })
+
+  test('adding a blog fails if a token is not provided', async () => {
+    const newBlog = {
+      title: "New Blog 0",
+      author: "Aaron 0",
+      url: "http://www.4300.com",
+      likes: 10
+    }
+
+    const response = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.error).toContain('token missing')
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+  })
 })
 
+
 describe('deleting blogs', () => {
+
+  let authorization
+
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+
+    await User.deleteMany({})
+    const user = {
+      username: 'root',
+      password: 'password'
+    }
+
+    await api
+      .post('/api/users')
+      .send(user)
+
+    const response = await api
+      .post('/api/login')
+      .send(user)
+
+    authorization = `bearer ${response.body.token}`
+  })
+
   test('a blog can be deleted', async () => {
+
+    const newBlog = {
+      title: "New Blog 0",
+      author: "Aaron 0",
+      url: "http://www.4300.com",
+      likes: 10
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', authorization)
+      .send(newBlog)
+
     const blogsAtStart = await helper.blogsInDb()
-    const blogToDelete = blogsAtStart[0]
+    const blogToDelete = blogsAtStart.find(b => b.title === newBlog.title)
   
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', authorization)
       .expect(204)
   
     const blogsAtEnd = await helper.blogsInDb()
   
     expect(blogsAtEnd).toHaveLength(
-      helper.initialBlogs.length - 1
+      helper.initialBlogs.length
     )
   
     const titles = blogsAtEnd.map(b => b.title)
@@ -122,6 +212,12 @@ describe('deleting blogs', () => {
 })
 
 describe('updating blogs', () => {
+
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
   test('number of likes can be updated correctly', async () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToUpdate = blogsAtStart[0]
