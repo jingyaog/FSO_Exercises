@@ -12,8 +12,6 @@ const App = () => {
   const [message, setMessage] = useState(null)
   const [style, setStyle] = useState('success')
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
   useEffect(() => {
@@ -82,6 +80,25 @@ const App = () => {
     }
   }
 
+  const incrementLikes = async (blog) => {
+    try {
+      const newBlog = {
+        title: blog.title,
+        author: blog.author,
+        url: blog.url,
+        user: blog.user.id,
+        likes: blog.likes + 1
+      }
+      const updatedBlog = await blogService.update(blog.id, newBlog)
+      let newBlogs = [...blogs]
+      const index = newBlogs.findIndex(blog => blog.id === updatedBlog.id)
+      newBlogs[index].likes++
+      setBlogs(newBlogs)
+    } catch (exception) {
+      console.log(exception.response.data.error)
+    }
+  }
+
   if (user === null) {
     return (
       <div>
@@ -108,7 +125,7 @@ const App = () => {
       
       <div>
         {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+          <Blog key={blog.id} blog={blog} incrementLikes={incrementLikes} />
         )}
       </div>
     </div>

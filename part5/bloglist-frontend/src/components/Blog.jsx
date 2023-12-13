@@ -1,6 +1,6 @@
 import Togglable from './Togglable'
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, incrementLikes }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -8,12 +8,18 @@ const Blog = ({ blog }) => {
     borderWidth: 1,
     marginBottom: 5
   }
+
+  const handleLike = (event) => {
+    event.preventDefault()
+    incrementLikes(blog)
+  }
+
   return (
     <div style={blogStyle}>
       {blog.title} {blog.author}
       <Togglable showLabel='view' hideLabel='hide'>
         <div>{blog.url}</div>
-        <div>likes {blog.likes} <button>like</button></div>
+        <div>likes {blog.likes} <button onClick={handleLike}>like</button></div>
         <div>{blog.user.name}</div>
       </Togglable>
     </div>  
