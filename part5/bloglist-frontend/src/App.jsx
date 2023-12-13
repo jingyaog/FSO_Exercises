@@ -64,8 +64,9 @@ const App = () => {
 
   const addBlog = async (newBlog) => {
     try {
-      const addedBlog = await blogService.create(newBlog)
-      setBlogs(blogs.concat(addedBlog))
+      await blogService.create(newBlog)
+      const newBlogs = await blogService.getAll()
+      setBlogs(newBlogs)
       setStyle('success')
       setMessage(`a new blog ${newBlog.title} by ${newBlog.author} added`)
       setTimeout(() => {
@@ -86,7 +87,7 @@ const App = () => {
       <div>
         <h2>Log in to application</h2>
         <Notification message={message} style={style} />
-        <Togglable buttonLabel='log in'>
+        <Togglable showLabel='log in' hideLabel='cancel'>
           <LoginForm handleLogin={handleLogin} />
         </Togglable>
       </div>
@@ -101,7 +102,7 @@ const App = () => {
         {user.name} logged in <button onClick={handleLogout}>logout</button>
       </div>
       
-      <Togglable buttonLabel='new blog'>
+      <Togglable showLabel='new blog' hideLabel='cancel'>
         <BlogForm createBlog={addBlog} />
       </Togglable>
       
