@@ -5,6 +5,7 @@ import loginService from './services/login'
 import Notification from './components/Notification'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
+import LoginForm from './components/LoginForm'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -30,11 +31,9 @@ const App = () => {
     }
   }, [])
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
-
+  const handleLogin = async (credentials) => {
     try {
-      const user = await loginService.login({ username, password })
+      const user = await loginService.login(credentials)
       window.localStorage.setItem('loggedUser', JSON.stringify(user))
       blogService.setToken(user.token)
       setUser(user)
@@ -43,8 +42,6 @@ const App = () => {
       setTimeout(() => {
         setMessage(null)
       }, 5000)
-      setUsername('')
-      setPassword('')
     } catch (exception) {
       setMessage('wrong username or password')
       setStyle('error')
@@ -89,27 +86,9 @@ const App = () => {
       <div>
         <h2>Log in to application</h2>
         <Notification message={message} style={style} />
-        <form onSubmit={handleLogin}>
-          <div>
-            username
-              <input
-              type="text"
-              value={username}
-              name="Username"
-              onChange={({ target }) => setUsername(target.value)}
-            />
-          </div>
-          <div>
-            password
-              <input
-              type="password"
-              value={password}
-              name="Username"
-              onChange={({ target }) => setPassword(target.value)}
-            />
-          </div>
-          <button type="submit">login</button>
-        </form>
+        <Togglable buttonLabel='log in'>
+          <LoginForm handleLogin={handleLogin} />
+        </Togglable>
       </div>
     )
   }
