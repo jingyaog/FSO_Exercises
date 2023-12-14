@@ -32,7 +32,7 @@ const Blog = ({ blog, user, incrementLikes, deleteBlog }) => {
         <div>{blog.user.name}</div>
         <button onClick={handleDelete} style={displayRemove}>remove</button>
       </Togglable>
-    </div>  
+    </div>
   )
 }
 
