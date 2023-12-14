@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -13,6 +13,8 @@ const App = () => {
   const [style, setStyle] = useState('success')
 
   const [user, setUser] = useState(null)
+  
+  const blogFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -62,6 +64,7 @@ const App = () => {
 
   const addBlog = async (newBlog) => {
     try {
+      blogFormRef.current.toggleVisibility()
       const createdBlog = await blogService.create(newBlog)
       createdBlog.user = user
       setBlogs(blogs.concat(createdBlog))
@@ -103,8 +106,18 @@ const App = () => {
     try {
       await blogService.remove(blog.id)
       setBlogs(blogs.filter(b => b.id !== blog.id))
+      setStyle('success')
+      setMessage(`blog ${blog.title} successfully deleted`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     } catch (exception) {
-      console.log(exception)
+      console.log(exception.response.data.error)
+      setStyle('error')
+      setMessage(exception.response.data.error)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     }
   }
 
@@ -128,7 +141,7 @@ const App = () => {
         {user.name} logged in <button onClick={handleLogout}>logout</button>
       </div>
       
-      <Togglable showLabel='new blog' hideLabel='cancel'>
+      <Togglable showLabel='new blog' hideLabel='cancel' ref={blogFormRef}>
         <BlogForm createBlog={addBlog} />
       </Togglable>
       
