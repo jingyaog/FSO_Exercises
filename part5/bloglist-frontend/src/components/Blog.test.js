@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import Blog from './Blog'
 
-test('renders the blog\'s title and author but not URL or number of likes', () => {
+describe('<Blog />', () => {
   const blog = {
     title: 'Test blog 1',
     author: 'Aaron',
@@ -20,59 +20,66 @@ test('renders the blog\'s title and author but not URL or number of likes', () =
     name: 'Test'
   }
 
-  const mockHandler = jest.fn()
+  const mockLikeHandler = jest.fn()
+  const mockDeleteHandler = jest.fn()
 
-  const { container } = render(
-    <Blog blog={blog} user={blogUser} incrementLikes={mockHandler} deleteBlog={mockHandler} />
-  )
+  test('renders the blog\'s title and author but not URL or number of likes', () => {
+    const { container } = render(
+      <Blog blog={blog} user={blogUser}
+        incrementLikes={mockLikeHandler}
+        deleteBlog={mockDeleteHandler}
+      />
+    )
 
-  const titleElement = screen.queryByText('Test blog 1', { exact: false })
-  const authorElement = screen.queryByText('Aaron', { exact: false })
-  expect(titleElement).toBeVisible()
-  expect(authorElement).toBeVisible()
+    const titleElement = screen.queryByText('Test blog 1', { exact: false })
+    const authorElement = screen.queryByText('Aaron', { exact: false })
+    expect(titleElement).toBeVisible()
+    expect(authorElement).toBeVisible()
 
-  const urlDiv = container.querySelector('.url')
-  expect(urlDiv).not.toBeVisible()
+    const urlDiv = container.querySelector('.url')
+    expect(urlDiv).not.toBeVisible()
 
-  const likesDiv = container.querySelector('.likes')
-  expect(likesDiv).not.toBeVisible()
-})
+    const likesDiv = container.querySelector('.likes')
+    expect(likesDiv).not.toBeVisible()
+  })
 
-test('blog\'s URL and number of likes are shown when button is clicked', async () => {
-  const blog = {
-    title: 'Test blog 1',
-    author: 'Aaron',
-    url: 'http://www.test.com',
-    likes: 3,
-    user: {
-      username: 'Test user 1',
-      name: 'Test'
-    }
-  }
-  const blogUser = {
-    username: 'Test user 1',
-    name: 'Test'
-  }
+  test('blog\'s URL and number of likes are shown when button is clicked', async () => {
+    const { container } = render(
+      <Blog blog={blog} user={blogUser}
+        incrementLikes={mockLikeHandler}
+        deleteBlog={mockDeleteHandler}
+      />
+    )
 
-  const mockHandler = jest.fn()
+    const user = userEvent.setup()
+    const viewButton = screen.getByText('view')
+    await user.click(viewButton)
 
-  const { container } = render(
-    <Blog blog={blog} user={blogUser} incrementLikes={mockHandler} deleteBlog={mockHandler} />
-  )
+    const urlDiv = container.querySelector('.url')
+    const likesDiv = container.querySelector('.likes')
 
-  const user = userEvent.setup()
-  const viewButton = screen.getByText('view')
-  await user.click(viewButton)
+    expect(urlDiv).toBeVisible()
+    expect(likesDiv).toBeVisible()
 
-  const urlDiv = container.querySelector('.url')
-  const likesDiv = container.querySelector('.likes')
+    const hideButton = screen.getByText('hide')
+    await user.click(hideButton)
 
-  expect(urlDiv).toBeVisible()
-  expect(likesDiv).toBeVisible()
+    expect(urlDiv).not.toBeVisible()
+    expect(likesDiv).not.toBeVisible()
+  })
 
-  const hideButton = screen.getByText('hide')
-  await user.click(hideButton)
+  test('event handler is called twice when like button is clicked twice', async () => {
+    const { container } = render(
+      <Blog blog={blog} user={blogUser}
+        incrementLikes={mockLikeHandler}
+        deleteBlog={mockDeleteHandler}
+      />
+    )
 
-  expect(urlDiv).not.toBeVisible()
-  expect(likesDiv).not.toBeVisible()
+    const user = userEvent.setup()
+    const likeButton = screen.getByText('like')
+    await user.click(likeButton)
+    await user.click(likeButton)
+    expect(mockLikeHandler.mock.calls).toHaveLength(2)
+  })
 })
