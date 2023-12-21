@@ -4,7 +4,7 @@ const Notification = ({ message, style }) => {
   }
 
   return (
-    <div className={style}>
+    <div className={style} data-cy="notification">
       {message}
     </div>
   )
