@@ -87,7 +87,7 @@ describe('Blog app', function () {
       cy.contains('New test blog', { timeout: 6000 }).should('not.exist')
     })
 
-    it.only('Only the creator can see the delete button', function () {
+    it('Only the creator can see the delete button', function () {
       cy.createBlog({
         title: 'New test blog',
         author: 'Aaron',
@@ -99,7 +99,24 @@ describe('Blog app', function () {
 
       cy.login({ username: 'test', password: '123456' })
       cy.contains('view').click()
-      cy.contains('remove').should('not.exist')
+      cy.contains('remove').should('not.visible')
+    })
+
+    it('Blogs are ordered by descending likes', function () {
+      cy.createBlog({
+        title: 'The title with the second most likes',
+        author: '2nd',
+        url: 'http://www.2nd.com',
+        likes: 10
+      })
+      cy.createBlog({
+        title: 'The title with the most likes',
+        author: '1st',
+        url: 'http://www.1st.com',
+        likes: 12
+      })
+      cy.get('.blog').eq(0).should('contain', 'The title with the most likes')
+      cy.get('.blog').eq(1).should('contain', 'The title with the second most likes')
     })
   })
 })
