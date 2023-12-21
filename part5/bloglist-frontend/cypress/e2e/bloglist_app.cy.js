@@ -56,7 +56,7 @@ describe('Blog app', function () {
       cy.contains('New test blog Aaron')
     })
 
-    it.only('A user can like a blog', function () {
+    it('A user can like a blog', function () {
       cy.createBlog({
         title: 'New test blog',
         author: 'Aaron',
@@ -66,6 +66,19 @@ describe('Blog app', function () {
       cy.contains('likes 0')
       cy.contains('like').click()
       cy.contains('likes 1')
+    })
+
+    it.only('The user who created a blog can delete it', function () {
+      cy.createBlog({
+        title: 'New test blog',
+        author: 'Aaron',
+        url: 'http://www.google.com'
+      })
+      cy.contains('view').click()
+      cy.contains('remove').click()
+      cy.get('[data-cy="notification"]')
+        .should('contain', 'blog New test blog successfully deleted')
+      cy.contains('New test blog', { timeout: 6000 }).should('not.exist')
     })
   })
 })
