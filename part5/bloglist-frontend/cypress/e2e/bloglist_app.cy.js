@@ -36,4 +36,24 @@ describe('Blog app', function () {
         .and('have.css', 'border-style', 'solid')
     })
   })
+
+  describe('When logged in', function () {
+    beforeEach(function () {
+      cy.login({ username: 'mluukkai', password: 'salainen' })
+    })
+
+    it('A blog can be created', function () {
+      cy.contains('new blog').click()
+      cy.get('#title-input').type('New test blog')
+      cy.get('#author-input').type('Aaron')
+      cy.get('#url-input').type('http://www.google.com')
+      cy.get('[data-cy="create-button"]').click()
+
+      cy.get('[data-cy="notification"]')
+        .should('contain', 'a new blog New test blog by Aaron added')
+        .and('have.css', 'color', 'rgb(0, 128, 0)')
+        .and('have.css', 'border-style', 'solid')
+      cy.contains('New test blog Aaron')
+    })
+  })
 })
