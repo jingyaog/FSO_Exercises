@@ -55,5 +55,17 @@ describe('Blog app', function () {
         .and('have.css', 'border-style', 'solid')
       cy.contains('New test blog Aaron')
     })
+
+    it.only('A user can like a blog', function () {
+      cy.createBlog({
+        title: 'New test blog',
+        author: 'Aaron',
+        url: 'http://www.google.com'
+      })
+      cy.contains('view').click()
+      cy.contains('likes 0')
+      cy.contains('like').click()
+      cy.contains('likes 1')
+    })
   })
 })
